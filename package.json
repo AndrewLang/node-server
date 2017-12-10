@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "gulp build && node ./dist/bootstrap.js",
+    "start": "gulp build && nodemon ./dist/bootstrap.js",
     "build": "gulp build",
+    "serve": "node dist/bootstrap.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,7 +27,8 @@
     "@types/node": "8.0.57",
     "nodemon": "1.12.5",
     "gulp": "3.9.1",
-    "gulp-typescript":"^3.2.3",
+    "gulp-typescript": "^3.2.3",
+    "ts-node": "3.3.0",
     "typescript": "2.6.2"
   }
 }
