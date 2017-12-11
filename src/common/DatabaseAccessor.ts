@@ -1,6 +1,10 @@
 import * as sqlite from 'sqlite3';
 
-export class DatabaseAccessor {
+export interface IDatabaseAccessor {
+    Execute(query: string): Promise<any>;
+}
+
+export class DatabaseAccessor implements IDatabaseAccessor {
 
     constructor(private connectionString: string) {
 
@@ -16,7 +20,7 @@ export class DatabaseAccessor {
                 if (error) {
                     reject(error);
                 }
-                
+
                 resolve(rows);
                 db.close();
             });
