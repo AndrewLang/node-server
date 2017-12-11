@@ -6,12 +6,59 @@ export class UserRoute implements Common.IRouterProvider {
 
     Build(options?: any): express.Router {
         let router = express.Router();
-        router.get('api/user/list', (req, res) => { });
+        router.get('/user/list', (req, res) => {
+            res.json({
+                data: req.params,
+                message: '',
+                succeed: true
+            });
+        });
 
-        router.get('api/user/:id', (req, res) => { });
-        
-        router.post('api/user', (req, res) => { });
-        router.delete('api/user/:id', (req, res) => { });
+        router.get('/user/:id', (req, res) => {
+            res.json({
+                data: req.params,
+                message: '',
+                succeed: true
+            });
+        });
+
+
+        router.post('/user', (req, res) => {
+            res.json({
+                data: req.body,
+                message: '',
+                succeed: true
+            });
+        });
+        router.post('/user/register', (req, res) => {
+            res.json({
+                data: req.body,
+                message: '',
+                succeed: true
+            });
+        });
+        router.post('/user/signin', (req, res) => {
+            res.json({
+                data: req.body,
+                message: '',
+                succeed: true
+            });
+        });
+        router.post('/user/signout', (req, res) => {
+            res.json({
+                data: req.body,
+                message: '',
+                succeed: true
+            });
+        });
+
+        router.delete('/user/:id', (req, res) => {
+            res.json({
+                data: req.params,
+                message: '',
+                succeed: true
+            });
+        });
 
         return router;
     }

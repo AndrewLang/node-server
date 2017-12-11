@@ -4,8 +4,8 @@ import * as bodyParser from 'body-parser';
 import * as Api from './api/index';
 import * as morgan from 'morgan';
 
-
 export class Server {
+    private apiRoot = '/api';
 
     public App: express.Application;
 
@@ -38,8 +38,11 @@ export class Server {
         let router = new Api.ApiRouter(); 
         let postRouter = new Api.PostRouter();
 
+
         this.App.use('/', router.Build());
-        this.App.use('/api', postRouter.Build());
+        this.App.use(this.apiRoot, postRouter.Build());
+        this.App.use(this.apiRoot, new Api.BlogRoute().Build());
+        this.App.use(this.apiRoot, new Api.UserRoute().Build());
 
         console.log(`Routes were configured`);
         //console.log( this.App);
