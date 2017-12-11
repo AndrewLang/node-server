@@ -51,6 +51,9 @@ export class PostRouter implements Common.IRouterProvider {
         });
         
         router.post('/post/search', (req, res) => { 
+            console.log('post body');
+            console.log(req.body);
+
             res.json({
                 data: req.body,
                 message:'',
@@ -58,7 +61,6 @@ export class PostRouter implements Common.IRouterProvider {
             });
         });        
         router.post('/post', (req, res) => { 
-            console.log(req.body);
             res.json({
                 data: req.body,
                 message:'',

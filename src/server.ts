@@ -2,18 +2,21 @@
 import * as express from "express";
 import * as bodyParser from 'body-parser';
 import * as Api from './api/index';
+import * as morgan from 'morgan';
+
 
 export class Server {
 
     public App: express.Application;
 
-    port = process.env.port || 8000;
+    port = process.env.port || 8001;
 
     constructor() {
         this.App = express();
     }
 
     public Start(): void {
+        this.Middleware();
         this.Routes();
 
         this.App.listen(this.port);
@@ -22,8 +25,10 @@ export class Server {
     }
 
     private Middleware(): void {
-        this.App.use(bodyParser.json());
+        this.App.use(morgan('dev'));
+
         this.App.use(bodyParser.urlencoded({ extended: false }));
+        this.App.use(bodyParser.json());        
     }
 
     private Routes(): void {
