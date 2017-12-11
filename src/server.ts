@@ -6,6 +6,8 @@ import * as passport from "passport";
 import { Strategy } from "passport-local";
 
 import * as Api from './api/index';
+import * as Db from './database/index';
+
 import * as morgan from 'morgan';
 
 export class Server {
@@ -19,13 +21,18 @@ export class Server {
         this.App = express();
     }
 
-    public Start(): void {
+    public async Start() {
         this.Middleware();
         this.Routes();
 
         this.App.listen(this.port);
 
         console.log(`Server started on port ${this.port}`);
+
+       
+        let db = new Db.DatabaseAccessor(`${__dirname}\\data\\MatrixBlog.db`);
+        let rows = await db.Execute('select * from posts order by DatePublished DESC LIMIT 10');
+        console.log(rows);
     }
 
     private Middleware(): void {
@@ -53,7 +60,7 @@ export class Server {
             (req, username, password, done) => {
                 console.log(username);
                 console.log(password);
-                
+
                 let user: { username: string, password: string };
                 if (username === 'andy' && password === 'supernova') {
                     user = { username: username, password: password };

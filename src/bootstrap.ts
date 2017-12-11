@@ -7,7 +7,10 @@ export class Bootstrap {
 
 
         let server = new Server();
-        server.Start();
+        server.Start()
+            .then(() => {
+                console.log(`Server started.`);
+            });
     }
 }
 

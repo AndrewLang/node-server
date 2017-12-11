@@ -5,6 +5,28 @@ import * as Common from './imports';
 
 export class UserRoute implements Common.IRouterProvider {
 
+    authenticate: (req, res, next) => void;
+
+    constructor() {
+        this.authenticate = (req, res, next) => {
+
+            passport.authenticate('local', (err, user, info) => {
+                if (err) {
+                    return next(err);
+                }
+                if (!user) {
+                    return res.json({
+                        data: req.body,
+                        message: 'Invalid username or password.',
+                        succeed: false
+                    });
+                }
+
+                next();
+            })(req, res, next);
+        };
+
+    }
     Build(options?: any): express.Router {
         let router = express.Router();
         router.get('/user/list', (req, res) => {
@@ -23,7 +45,6 @@ export class UserRoute implements Common.IRouterProvider {
             });
         });
 
-
         router.post('/user', (req, res) => {
             res.json({
                 data: req.body,
@@ -38,30 +59,14 @@ export class UserRoute implements Common.IRouterProvider {
                 succeed: true
             });
         });
-        router.post('/user/signin',          
-            (req, res, next) => {
-                
-                passport.authenticate('local', (err, user, info) => {
-                    if (err) {
-                        return next(err);
-                    }
-                    if (!user) {
-                        return res.json({
-                            data: req.body,
-                            message: 'Invalid username or password.',
-                            succeed: false
-                        });
-                    }
-                })(req, res, next);
-            },
-            (req, res, next) => {
-                console.log(req.user);
+        router.post('/user/signin',
+            this.authenticate,
+            (req, res) => {                
                 res.json({
                     data: req.body,
                     message: '',
                     succeed: true
                 });
-                next();
             });
         router.post('/user/signout', (req, res) => {
             res.json({
