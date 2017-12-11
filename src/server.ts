@@ -31,6 +31,17 @@ export class Server {
                 message: 'Hello World!'
             });
         });
+        router.get('/home', (req, res, next) => {
+            res.json({
+                message: 'Home page'
+            });
+        });
+
+        router.get('/api', (req, res, next) => {
+            res.json({
+                message: 'Api root'
+            });
+        });
 
         this.App.use('/', router);
 
