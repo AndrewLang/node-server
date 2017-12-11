@@ -1,6 +1,7 @@
 
 import * as express from "express";
-
+import * as bodyParser from 'body-parser';
+import * as Api from './api/index';
 
 export class Server {
 
@@ -20,30 +21,18 @@ export class Server {
         console.log(`Server started on port ${this.port}`);
     }
 
+    private Middleware(): void {
+        this.App.use(bodyParser.json());
+        this.App.use(bodyParser.urlencoded({ extended: false }));
+    }
+
     private Routes(): void {
 
         console.log(`Initialize routes`);
 
-        let router = express.Router();
+        let router = new Api.ApiRouter(); express.Router();
 
-        router.get('/', (req, res, next) => {
-            res.json({
-                message: 'Hello World!'
-            });
-        });
-        router.get('/home', (req, res, next) => {
-            res.json({
-                message: 'Home page'
-            });
-        });
-
-        router.get('/api', (req, res, next) => {
-            res.json({
-                message: 'Api root'
-            });
-        });
-
-        this.App.use('/', router);
+        this.App.use('/', router.Build());
 
         console.log(`Routes were configured`);
     }
