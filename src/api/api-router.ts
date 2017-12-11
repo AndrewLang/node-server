@@ -19,12 +19,12 @@ export class ApiRouter implements Common.IRouterProvider{
             next();
         });
 
-        router.get('/api', (req, res, next) => {
-            res.json({
-                message: 'Api root'
-            });
-            next();
-        });
+        // router.get('/api', (req, res, next) => {
+        //     res.json({
+        //         message: 'Api root'
+        //     });
+        //     next();
+        // });
 
         return router;
     }

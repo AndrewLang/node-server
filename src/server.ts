@@ -30,10 +30,13 @@ export class Server {
 
         console.log(`Initialize routes`);
 
-        let router = new Api.ApiRouter(); express.Router();
+        let router = new Api.ApiRouter(); 
+        let postRouter = new Api.PostRouter();
 
         this.App.use('/', router.Build());
+        this.App.use('/api', postRouter.Build());
 
         console.log(`Routes were configured`);
+        //console.log( this.App);
     }
 }
