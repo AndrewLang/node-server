@@ -1,5 +1,6 @@
 
 import * as express from "express";
+import * as passport from "passport";
 import * as Common from './imports';
 
 export class UserRoute implements Common.IRouterProvider {
@@ -37,13 +38,31 @@ export class UserRoute implements Common.IRouterProvider {
                 succeed: true
             });
         });
-        router.post('/user/signin', (req, res) => {
-            res.json({
-                data: req.body,
-                message: '',
-                succeed: true
+        router.post('/user/signin',          
+            (req, res, next) => {
+                
+                passport.authenticate('local', (err, user, info) => {
+                    if (err) {
+                        return next(err);
+                    }
+                    if (!user) {
+                        return res.json({
+                            data: req.body,
+                            message: 'Invalid username or password.',
+                            succeed: false
+                        });
+                    }
+                })(req, res, next);
+            },
+            (req, res, next) => {
+                console.log(req.user);
+                res.json({
+                    data: req.body,
+                    message: '',
+                    succeed: true
+                });
+                next();
             });
-        });
         router.post('/user/signout', (req, res) => {
             res.json({
                 data: req.body,
