@@ -4,8 +4,7 @@ import { ServiceToken } from './ServiceToken';
 
 export class ServiceDescriptor {
     Name: string;
-    Token: ServiceToken;
-    // ServiceType: Type<any>;
+    Token: ServiceToken;    
     ImplementationType: Type<any>;
     ImplementationInstance: any;
     ImplementationFactory: (serviceProvider?: any) => any;

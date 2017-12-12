@@ -114,14 +114,23 @@ export class Server {
     private TestDI(): void {
         let services = new DI.ServicecContainer();
         let token = { Token: 'LoggingService' };
+        let errortoken = { Token: 'ExceptionLoggingService' };
+
         services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
+        services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
 
         console.log(services);
 
         let service = services.TryResolve<ILoggingService>(token);
         console.log(service);
         if (service) {
-            service.Debug('Got service');
+            service.Debug('Got logging service');
+        }
+
+        let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
+        console.log(errorSvc);
+        if (errorSvc) {
+            errorSvc.Handle('fake exception');
         }
     }
 }
@@ -142,5 +151,22 @@ interface ILoggingService {
 class LoggingService implements ILoggingService {
     Debug(message: string): void {
         console.log(message);
+    }
+}
+
+interface IExceptionHandlingService {
+    Handle(error: any): void;
+}
+class ExceptionLoggingService implements IExceptionHandlingService {
+
+    constructor(private loggingService: ILoggingService) {
+
+    }
+    Handle(error: any): void {
+        if (this.loggingService) {
+            this.loggingService.Debug(error);
+        } else {
+            console.log('Logging service not found.')
+        }
     }
 }

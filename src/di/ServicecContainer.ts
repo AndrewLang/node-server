@@ -84,6 +84,7 @@ export class ServicecContainer implements IServiceContainer {
 
         let params = Activator.GetParameters(descriptor.ImplementationType);
 
+        console.log(`service parameters`);
         console.log(params);
 
         return result;
