@@ -35,7 +35,7 @@ export class Server {
         // let rows = await db.Execute('select * from posts order by DatePublished DESC LIMIT 10');
         // console.log(rows);
 
-        this.TestActivator();
+        // this.TestActivator();
 
         this.TestDI();
     }
@@ -112,26 +112,44 @@ export class Server {
     }
 
     private TestDI(): void {
-        let services = new DI.ServicecContainer();
-        let token = { Token: 'LoggingService' };
-        let errortoken = { Token: 'ExceptionLoggingService' };
 
-        services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
-        services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
+        let type = ExceptionLoggingService;
+        console.log(type.prototype);
+        // console.log(type.arguments);
+        console.log(type.name);
+        console.log(type.length);
+        // console.log(type.caller);
+        console.log((<any>type).parameters);
 
-        console.log(services);
+        let proto = Object.getPrototypeOf(type);
+        console.log(proto.constructor);
+        let temp = proto();
+        console.log(temp);
 
-        let service = services.TryResolve<ILoggingService>(token);
-        console.log(service);
-        if (service) {
-            service.Debug('Got logging service');
-        }
+        let ctor = DI.Activator.GetParentCtor(type);
+        console.log(ctor.prototype);
 
-        let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
-        console.log(errorSvc);
-        if (errorSvc) {
-            errorSvc.Handle('fake exception');
-        }
+
+        // let services = new DI.ServicecContainer();
+        // let token = { Token: 'LoggingService' };
+        // let errortoken = { Token: 'ExceptionLoggingService' };
+
+        // services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
+        // services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
+
+        // console.log(services);
+
+        // let service = services.TryResolve<ILoggingService>(token);
+        // console.log(service);
+        // if (service) {
+        //     service.Debug('Got logging service');
+        // }
+
+        // let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
+        // console.log(errorSvc);
+        // if (errorSvc) {
+        //     errorSvc.Handle('fake exception');
+        // }
     }
 }
 

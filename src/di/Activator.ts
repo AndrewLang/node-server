@@ -46,7 +46,7 @@ export class Activator {
      * 
      * @param ctor 
      */
-    private static GetParentCtor(ctor: Function): Type<any> {
+    public static GetParentCtor(ctor: Function): Type<any> {
         const parentProto = Object.getPrototypeOf(ctor.prototype);
         const parentCtor = parentProto ? parentProto.constructor : null;
         return parentCtor || Object;
@@ -56,7 +56,7 @@ export class Activator {
      * @param type 
      * @param parentCtor 
      */
-    private static GetOwnParameters(type: Type<any>, parentCtor: any): any[][] | null {
+    public static GetOwnParameters(type: Type<any>, parentCtor: any): any[][] | null {
         if (!type) {
             throw new Error(`Argument type is null`);
         }
