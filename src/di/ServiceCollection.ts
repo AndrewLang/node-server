@@ -4,7 +4,7 @@ import { ServiceToken } from './ServiceToken';
 
 
 export class ServiceCollection implements IServiceCollection {
-    private serviceTable = new Map<ServiceDescriptor, any>();
+
     private nameTokenMapping = new Map<string, ServiceToken>();
     private tokenTable = new Map<ServiceToken, ServiceDescriptor>();
     private instanceTable = new Map<ServiceToken, any>();
@@ -24,5 +24,29 @@ export class ServiceCollection implements IServiceCollection {
 
     }
 
-    // TryResolve( serviceType)
+    TryResolve<TService>(serviceToken: ServiceToken): TService {
+        if (!serviceToken) {
+            return null;
+        }
+
+        if (this.instanceTable.has(serviceToken)) {
+            return this.instanceTable.get(serviceToken);
+        }
+
+        if (this.tokenTable.has(serviceToken)) {
+            let descriptor = this.tokenTable.get(serviceToken);
+            let instance: any;
+            if (descriptor.ImplementationInstance) {
+                instance = descriptor.ImplementationInstance;
+                this.instanceTable.set(serviceToken, instance);
+            } else if (descriptor.ImplementationFactory) {
+                instance = descriptor.ImplementationFactory();
+                this.instanceTable.set(serviceToken, instance);
+            } else if( descriptor.ImplementationType) {
+                // descriptor.ImplementationType.arguments
+            }
+
+            return instance;
+        }
+    }
 }
