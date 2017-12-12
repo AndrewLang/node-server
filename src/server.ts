@@ -35,16 +35,9 @@ export class Server {
         // let rows = await db.Execute('select * from posts order by DatePublished DESC LIMIT 10');
         // console.log(rows);
 
-        /** Create instance  */
-        
-        let instance = DI.Activator.Createinstance<TestObj>(TestObj, 1, 2);
-        
-        console.log(instance);
+        this.TestActivator();
 
-        console.log( DI.Activator.Createinstance<ClassWithoutDecorators>(ClassWithoutDecorators, 'first', 'seconds'));
-
-        let token = DI.Activator.Createinstance<DI.ServiceToken>(DI.ServiceToken, 'token description');
-        console.log(token);
+        this.TestDI();
     }
 
     private Middleware(): void {
@@ -105,31 +98,32 @@ export class Server {
         //console.log( this.App);
     }
 
-    getInstance<T>(ctor: DI.Type<T>, ...args: any[]): T {
-        var instance = Object.create(ctor.prototype);
-        ctor.apply(instance, args);
-        return <T>instance;
+    private TestActivator(): void {
+        /** Create instance  */
+
+        let instance = DI.Activator.Createinstance<TestObj>(TestObj, 1, 2);
+
+        console.log(instance);
+
+        console.log(DI.Activator.Createinstance<ClassWithoutDecorators>(ClassWithoutDecorators, 'first', 'seconds'));
+
+        // let token = DI.Activator.Createinstance<DI.ServiceToken>(DI.ServiceToken, 'token description');
+        // console.log(token);
     }
 
-    factory<T>(t: DI.Type<T>): (...args: any[]) => T {
-        return (...args: any[]) => new t(...args);
+    private TestDI(): void {
+        let services = new DI.ServiceCollection();
+        let token = { Token: 'LoggingService' };
+        services.Add(DI.ServiceDescriptor.Singleton(token, LoggingService));
+
+        console.log(services);
+
+        let service = services.TryResolve<ILoggingService>(token);
+        console.log(service);
+        if (service) {
+            service.Debug('Got service');
+        }
     }
-
-    getParentCtor(ctor: Function): DI.Type<any> {
-        const parentProto = Object.getPrototypeOf(ctor.prototype);
-        console.log(parentProto);
-
-        const parentCtor = parentProto ? parentProto.constructor : null;
-        // Note: We always use `Object` as the null value
-        // to simplify checking later on.
-        return parentCtor || Object;
-    }
-}
-
-export function create(ctor: Function, ...args: any[]): any {
-    let obj = Object.create(ctor.prototype);
-    // ctor.apply(obj, args);
-    return obj;
 }
 
 class TestObj {
@@ -140,4 +134,13 @@ class TestObj {
 }
 class ClassWithoutDecorators {
     constructor(public a: any, public b: any) { }
+}
+
+interface ILoggingService {
+    Debug(message: string): void;
+}
+class LoggingService implements ILoggingService {
+    Debug(message: string): void {
+        console.log(message);
+    }
 }
