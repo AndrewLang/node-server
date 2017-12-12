@@ -1,5 +1,6 @@
 import { Type } from './Type';
 import { ServiceToken } from './ServiceToken';
+import { IServiceProvider } from './IServiceProvider';
 
 
 export class ServiceDescriptor {
@@ -17,7 +18,7 @@ export class ServiceDescriptor {
         this.ImplementationInstance = instance;
         return this;
     }
-    UseFactory(factory: (serviceProvider?: any) => any): ServiceDescriptor {
+    UseFactory(factory: (serviceProvider?: IServiceProvider) => any): ServiceDescriptor {
         this.ImplementationFactory = factory;
         return this;
     }

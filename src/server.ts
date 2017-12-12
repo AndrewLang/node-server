@@ -113,43 +113,50 @@ export class Server {
 
     private TestDI(): void {
 
-        let type = ExceptionLoggingService;
-        console.log(type.prototype);
-        // console.log(type.arguments);
-        console.log(type.name);
-        console.log(type.length);
-        // console.log(type.caller);
-        console.log((<any>type).parameters);
+        // let type = ExceptionLoggingService;
+        // console.log(type.prototype);
+        // // console.log(type.arguments);
+        // console.log(type.name);
+        // console.log(type.length);
+        // // console.log(type.caller);
+        // console.log((<any>type).parameters);
 
-        let proto = Object.getPrototypeOf(type);
-        console.log(proto.constructor);
-        let temp = proto();
-        console.log(temp);
+        // let proto = Object.getPrototypeOf(type);
+        // console.log(proto.constructor);
+        // let temp = proto();
+        // console.log(temp);
 
-        let ctor = DI.Activator.GetParentCtor(type);
-        console.log(ctor.prototype);
+        // let ctor = DI.Activator.GetParentCtor(type);
+        // console.log(ctor.prototype);
 
 
-        // let services = new DI.ServicecContainer();
-        // let token = { Token: 'LoggingService' };
-        // let errortoken = { Token: 'ExceptionLoggingService' };
+        let services = new DI.ServicecContainer();
+        let token = { Token: 'LoggingService' };
+        let errortoken = { Token: 'ExceptionLoggingService' };
 
-        // services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
+        services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
         // services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
+        services.Register(DI.ServiceDescriptor.Singleton(errortoken)
+            .UseFactory(serviceProvider => {
+                let loggingSvc = serviceProvider.GetService(token);
 
-        // console.log(services);
+                return new ExceptionLoggingService(loggingSvc);
+            }));
 
-        // let service = services.TryResolve<ILoggingService>(token);
-        // console.log(service);
-        // if (service) {
-        //     service.Debug('Got logging service');
-        // }
+        console.log(services);
 
-        // let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
-        // console.log(errorSvc);
-        // if (errorSvc) {
-        //     errorSvc.Handle('fake exception');
-        // }
+        let service = services.TryResolve<ILoggingService>(token);
+        console.log(service);
+        if (service) {
+            service.Debug('Got logging service');
+        }
+
+        let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
+        console.log(errorSvc);
+        if (errorSvc) {
+            errorSvc.Handle('fake exception');
+        }
+
     }
 }
 
@@ -177,9 +184,10 @@ interface IExceptionHandlingService {
 }
 class ExceptionLoggingService implements IExceptionHandlingService {
 
-    constructor(private loggingService: ILoggingService) {
+    constructor( @DI.TokenCreator('LoggingService') private loggingService: ILoggingService) {
 
     }
+
     Handle(error: any): void {
         if (this.loggingService) {
             this.loggingService.Debug(error);

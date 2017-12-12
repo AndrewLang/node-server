@@ -1,7 +1,8 @@
 
-import { Type } from './Type';
+
+import { ServiceToken } from './index';
 
 export interface IServiceProvider {
-    GetService(serviceType: Type<any>): any;
-    GetService<T>(): any;
+    GetService(serviceToken: ServiceToken): any;
+    GetService<T>(serviceToken: ServiceToken): T;
 }

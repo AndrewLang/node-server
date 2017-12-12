@@ -3,16 +3,22 @@ import { ServiceDescriptor } from './ServiceDescriptor';
 import { ServiceToken } from './ServiceToken';
 import { Activator } from './Activator';
 import { Type } from './Type';
+import { IServiceProvider } from './IServiceProvider';
 
 
 
-export class ServicecContainer implements IServiceContainer {
+export class ServicecContainer implements IServiceContainer, IServiceProvider {
+
 
     private nameTokenMapping = new Map<string, ServiceToken>();
     private typeMapping = new Map<Type<any>, Type<any>[]>();
     private tokenTable = new Map<ServiceToken, ServiceDescriptor>();
     private instanceTable = new Map<ServiceToken, any>();
 
+    constructor() {
+        this.Register(ServiceDescriptor.Singleton({ Token: 'IServiceContainer' }).UseInstance(this))
+            .Register(ServiceDescriptor.Singleton({ Token: 'IServiceProvider' }).UseInstance(this));
+    }
 
     Register(descriptor: ServiceDescriptor): IServiceContainer {
         if (!descriptor) {
@@ -22,7 +28,7 @@ export class ServicecContainer implements IServiceContainer {
         if (descriptor.Name && descriptor.Token) {
             this.nameTokenMapping.set(descriptor.Name, descriptor.Token);
         }
-        
+
         this.tokenTable.set(descriptor.Token, descriptor);
 
         return this;
@@ -46,7 +52,7 @@ export class ServicecContainer implements IServiceContainer {
                 this.instanceTable.set(serviceToken, instance);
             } else if (descriptor.ImplementationFactory) {
                 // resolve instance by registered factory
-                instance = descriptor.ImplementationFactory();
+                instance = descriptor.ImplementationFactory(this);
                 this.instanceTable.set(serviceToken, instance);
             } else if (descriptor.ImplementationType) {
                 // resolve instance by implementation type
@@ -61,7 +67,11 @@ export class ServicecContainer implements IServiceContainer {
             return instance;
         }
     }
-
+    GetService(serviceToken: ServiceToken);
+    GetService<T>(serviceToken: ServiceToken): T;
+    GetService(serviceToken: any) {
+        return this.TryResolve(serviceToken);
+    }
     // private ResolveInternal(descriptor: ServiceDescriptor): any {
     //     if (!descriptor) {
     //         return null;
