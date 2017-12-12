@@ -1,4 +1,4 @@
-import { IServiceCollection } from './IServiceCollection';
+import { IServiceContainer } from './IServiceContainer';
 import { ServiceDescriptor } from './ServiceDescriptor';
 import { ServiceToken } from './ServiceToken';
 import { Activator } from './Activator';
@@ -6,16 +6,15 @@ import { Type } from './Type';
 
 
 
-export class ServiceCollection implements IServiceCollection {
+export class ServicecContainer implements IServiceContainer {
 
     private nameTokenMapping = new Map<string, ServiceToken>();
     private typeMapping = new Map<Type<any>, Type<any>[]>();
     private tokenTable = new Map<ServiceToken, ServiceDescriptor>();
     private instanceTable = new Map<ServiceToken, any>();
 
-    Services: ServiceDescriptor[] = [];
 
-    Add(descriptor: ServiceDescriptor): void {
+    Register(descriptor: ServiceDescriptor): IServiceContainer {
         if (!descriptor) {
             throw new Error(`Null parameter of 'descriptor'`);
         }
@@ -25,6 +24,8 @@ export class ServiceCollection implements IServiceCollection {
         }
         
         this.tokenTable.set(descriptor.Token, descriptor);
+
+        return this;
     }
 
     TryResolve<TService>(serviceToken: ServiceToken): TService {

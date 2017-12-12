@@ -112,9 +112,9 @@ export class Server {
     }
 
     private TestDI(): void {
-        let services = new DI.ServiceCollection();
+        let services = new DI.ServicecContainer();
         let token = { Token: 'LoggingService' };
-        services.Add(DI.ServiceDescriptor.Singleton(token, LoggingService));
+        services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
 
         console.log(services);
 

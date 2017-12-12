@@ -10,15 +10,29 @@ export class ServiceDescriptor {
     ImplementationInstance: any;
     ImplementationFactory: (serviceProvider?: any) => any;
 
+    WithName(name: string): ServiceDescriptor {
+        this.Name = name;
+        return this;
+    }
+    UseInstance(instance: any): ServiceDescriptor {
+        this.ImplementationInstance = instance;
+        return this;
+    }
+    UseFactory(factory: (serviceProvider?: any) => any): ServiceDescriptor {
+        this.ImplementationFactory = factory;
+        return this;
+    }
+    UseType(implementationType: Type<any>): ServiceDescriptor {
+        this.ImplementationType = implementationType;
+        return this;
+    }
 
-    // static Singleton(service: Type<any>, implementationFactory: (serviceProvider?: any) => any): ServiceDescriptor ;
-    static Singleton(token: ServiceToken, implementation: Type<any>, name?: string, instance?: any, implementationFactory?: (serviceProvider?: any) => any): ServiceDescriptor {
+    
+    static Singleton(token: ServiceToken): ServiceDescriptor {
         let descriptor = new ServiceDescriptor();
-        descriptor.Token = token;
-        descriptor.ImplementationType = implementation;
-        descriptor.ImplementationFactory = implementationFactory;
-        descriptor.Name = name;
-        descriptor.ImplementationInstance = instance;
+        descriptor.Token = token;        
         return descriptor;
     }
+
+
 }
