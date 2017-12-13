@@ -6,4 +6,5 @@ export * from './ServiceToken';
 export * from './Type';
 export * from './Activator';
 export * from './Reflector';
-
+export * from './KnownKeys';
+export * from './Models';

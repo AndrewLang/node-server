@@ -195,21 +195,47 @@ class ClassWithoutDecorators {
     constructor(public a: any, public b: any) { }
 }
 
+
 interface ILoggingService {
     Debug(message: string): void;
 }
+@DI.Injectable()
 class LoggingService implements ILoggingService {
     Debug(message: string): void {
         console.log(message);
     }
 }
 
+interface IMockService {
+    Do(): void;
+}
+
+@DI.Injectable()
+class MockService implements IMockService {
+    Do(): void {
+        console.log('do noting');
+    }
+}
+interface IFackService {
+    Call():void;
+}
+@DI.Injectable()
+class FackService implements IFackService{
+    Call():void{
+        console.log( 'Fack Service');
+    }
+}
+
 interface IExceptionHandlingService {
     Handle(error: any): void;
 }
+@DI.Injectable()
 class ExceptionLoggingService implements IExceptionHandlingService {
 
-    constructor( @DI.Service('LoggingService') private loggingService: ILoggingService) {
+    constructor(private mockService: MockService,
+         @DI.Inject({ Token: 'ILoggingService' }) private loggingService: ILoggingService,
+         private fackService: FackService
+        ) {
 
     }
 
@@ -219,21 +245,99 @@ class ExceptionLoggingService implements IExceptionHandlingService {
         } else {
             console.log('Logging service not found.')
         }
+        if (this.mockService) {
+            this.mockService.Do();
+        }
+        if( this.fackService){
+            this.fackService.Call();
+        }
     }
+}
+
+export const Debug = (name: string, data?: any) => {
+    console.log('');
+    console.log(name);
+    console.log(data);
+    console.log('');
+};
+
+export const DebugMetaMap = (name: string, data?: DI.MetadataMap) => {
+
+    if (data) {
+        console.log('');
+        console.log(name);
+        for (let item in data) {
+            console.log(item);
+            console.log(data[item]);
+        }
+        // console.log(data);
+        console.log('');
+    }
+
+};
+
+function logParamTypes(target: any, key: string) {
+    var types = Reflect.getMetadata("design:paramtypes", target, key);
+    var s = types.map(a => a.name).join();
+    console.log(`Method ${key} param types: ${s}`);
 }
 
 
 class Calculator {
 
-    constructor(      
-        @DI.Service('service toke param') des?:string
-    ) {
 
+    constructor(
+        @DI.Service('service toke param') des?: string
+    ) {
+        let services = new DI.ServicecContainer();
+        let token = { Token: 'ILoggingService' };
+        let errortoken = { Token: 'IExceptionLoggingService' };
+
+        services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
+        services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
+        //services.Register(DI.ServiceDescriptor.Singleton())
+
+        // let loggingSvc = services.GetService<ILoggingService>(token);
+
+
+        // Debug('Get constructor name', DI.Activator.GetFunctionName(LoggingService));
+        // Debug('Get constructor metadata', DI.Activator.GetConstructorMetadata(LoggingService))
+
+        Debug('Get constructor name', DI.Activator.GetFunctionName(ExceptionLoggingService));
+        Debug('Keys', Reflect.getMetadataKeys(ExceptionLoggingService));
+        let metadata = DI.Activator.GetConstructorMetadata(ExceptionLoggingService);
+        if (metadata.CompilerData) {
+            Debug('Non-inject', metadata.CompilerData.toString());
+            console.log(DI.Activator.GetFunctionName(metadata.CompilerData));
+        }
+        for (let item in metadata.UserData) {
+            let data = metadata.UserData[item][0];
+
+            console.log(`Key: ${data.Key}, Value: `);
+            console.log(data.Value);
+
+            // let svc = services.GetService(data.Value);
+            // Debug('Service', svc);
+        }
+        // Debug('Get constructor compiler metadata of exception service', metadata.CompilerData.toString());
+        // DebugMetaMap('Get constructor user  metadata', metadata.UserData);
+
+        let data = DI.Reflector.GetMetadata(DI.KnownKeys.ParamTypes, ExceptionLoggingService);
+        Debug('Get metadata', data)
+        for (let item in data) {
+            console.log(item);
+            let func = data[item];
+
+            console.log(DI.Activator.GetFunctionName(func));
+        }
+
+        console.log('');
     }
 
+    @logParamTypes
     add(x: number, y: number) {
         return x + y;
     }
 }
 
-new Calculator('test',).add(1, 3);
+new Calculator('test', ).add(1, 3);

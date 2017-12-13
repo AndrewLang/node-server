@@ -43,12 +43,33 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
         console.log(`Resolve service with`);
         console.log(serviceToken);
 
-        if (this.instanceTable.has(serviceToken)) {
-            return this.instanceTable.get(serviceToken);
+        let lookupToken = (map: Map<ServiceToken, any>, token: ServiceToken): any => {
+            if (map.has(token)) {
+                return map.get(token);
+            } else {
+                let instance: any;
+                // console.log('Looking into table')
+                map.forEach((value, key) => {
+                    
+                    if (key.Token == token.Token) {
+                        instance = value;                        
+                    }
+                });
+                return instance;
+            }
+        };
+
+        let exist = lookupToken(this.instanceTable, serviceToken);
+
+        if (exist) {
+            // return this.instanceTable.get(serviceToken);
+            return exist;
         }
 
-        if (this.tokenTable.has(serviceToken)) {
-            let descriptor = this.tokenTable.get(serviceToken);
+        exist = lookupToken(this.tokenTable, serviceToken);
+
+        if (exist) {
+            let descriptor = exist; this.tokenTable.get(serviceToken);
 
             console.log('');
             console.log('Service descriptor');
@@ -73,9 +94,14 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
                 this.instanceTable.set(serviceToken, instance);
             }
 
-            console.log('==================================================================');
+
             return instance;
+        } else {
+            console.log(`No descriptor found by given token`);
+            //console.log(this.tokenTable);
         }
+
+        console.log('==================================================================');
     }
     GetService(serviceToken: ServiceToken);
     GetService<T>(serviceToken: ServiceToken): T;
