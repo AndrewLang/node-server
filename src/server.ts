@@ -217,12 +217,12 @@ class MockService implements IMockService {
     }
 }
 interface IFackService {
-    Call():void;
+    Do(): void;
 }
 @DI.Injectable()
-class FackService implements IFackService{
-    Call():void{
-        console.log( 'Fack Service');
+class FackService implements IFackService {
+    Do(): void {
+        console.log('Calling Fack Service');
     }
 }
 
@@ -233,9 +233,9 @@ interface IExceptionHandlingService {
 class ExceptionLoggingService implements IExceptionHandlingService {
 
     constructor(private mockService: MockService,
-         @DI.Inject({ Token: 'ILoggingService' }) private loggingService: ILoggingService,
-         private fackService: FackService
-        ) {
+        @DI.Inject({ Token: 'ILoggingService' }) private loggingService: ILoggingService,
+        private fackService: FackService
+    ) {
 
     }
 
@@ -248,8 +248,8 @@ class ExceptionLoggingService implements IExceptionHandlingService {
         if (this.mockService) {
             this.mockService.Do();
         }
-        if( this.fackService){
-            this.fackService.Call();
+        if (this.fackService) {
+            this.fackService.Do();
         }
     }
 }
@@ -327,8 +327,15 @@ class Calculator {
         for (let item in data) {
             console.log(item);
             let func = data[item];
+            let name = DI.Activator.GetFunctionName(func);
+            console.log(name);
 
-            console.log(DI.Activator.GetFunctionName(func));
+            if (name && name !== 'Object') {
+                let instance = DI.Activator.Createinstance(func);
+                console.log(`Instance for ${name}`);
+                console.log(instance);
+                (instance as any).Do();
+            }
         }
 
         console.log('');
