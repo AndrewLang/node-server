@@ -1,3 +1,5 @@
+import { Reflector } from './Reflector';
+
 export interface ServiceToken {
     Token: string;
 }
@@ -6,14 +8,16 @@ export interface ServiceToken {
 // export const TokenCrator: (token: string) => () => ServiceToken = (token: string): () => ServiceToken => {
 //     return () => { return { Token: token } };
 // };
-
+export const ServiceTokenKey = 'MatrixServiceToken';
 export const Service = function (token: string) {
-    console.log(`token creator`);
-    console.log(token);
     return function (target: object, property: string, index: number) {
-        // return { Token: token };
-        console.log(target);
-        console.log(property);
-        console.log(index);
+        let data = Reflector.GetOwnMetadata(ServiceTokenKey, target, property);
+        if (!data) {
+            Reflector.DefineMetadata(ServiceTokenKey, token, target, property);
+        }
     }
 };
+export const GetServiceToken = (target, property) => {
+    let data = Reflector.GetOwnMetadata(ServiceTokenKey, target, property);
+    return data;
+}

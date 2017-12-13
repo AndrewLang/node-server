@@ -38,6 +38,8 @@ export class Server {
         // this.TestActivator();
 
         // this.TestDI();
+
+        this.TestReflect();
     }
 
     private Middleware(): void {
@@ -177,6 +179,10 @@ export class Server {
 
 
     }
+
+    private TestReflect(): void {
+
+    }
 }
 
 class TestObj {
@@ -217,50 +223,17 @@ class ExceptionLoggingService implements IExceptionHandlingService {
 }
 
 
-const log = (target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<Function>) => {
-    console.log('parameters: ');
-    console.log(target);
-    console.log(key);
-    console.log(descriptor);
-
-    return {
-        value: function (...args: any[]) {
-            console.log("Arguments: ", args.join(", "));
-            const result = descriptor.value.apply(target, args);
-            console.log("Result: ", result);
-            return result;
-        }
-    }
-}
-const LOGGED_PARAM_KEY = "logged_param";
-const loggedParam = (target: Object, key: string | symbol, index: number) => {
-
-    console.log('constructor ');
-    console.log(target);
-    console.log(key);
-    console.log(index);
-
-    let metaForLoggedParam = target[LOGGED_PARAM_KEY];
-    if (!metaForLoggedParam) {
-        metaForLoggedParam = {};
-        target[LOGGED_PARAM_KEY] = metaForLoggedParam;
-    }
-    const loggedParams: number[] = metaForLoggedParam[key] || [];
-    loggedParams.push(index);
-    target[LOGGED_PARAM_KEY] = loggedParams;
-
-    console.log(target);
-}
-
 class Calculator {
 
-    constructor( @loggedParam name: string) {
+    constructor(      
+        @DI.Service('service toke param') des?:string
+    ) {
 
     }
-    @log
+
     add(x: number, y: number) {
         return x + y;
     }
 }
 
-new Calculator('test').add(1, 3);
+new Calculator('test',).add(1, 3);
