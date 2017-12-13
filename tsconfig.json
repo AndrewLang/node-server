@@ -5,7 +5,7 @@
       "sourceMap": true,
       "declaration": false,
       "experimentalDecorators": true,
-      "emitDecoratorMetadata": true,
+      "emitDecoratorMetadata": false,
       "moduleResolution": "node",
       "target": "es6",
       "module": "commonjs",

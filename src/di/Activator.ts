@@ -30,7 +30,10 @@ export class Activator {
             return [];
         }
 
+        console.log('Service type');
         console.log(type);
+        console.log( arguments);
+
         const parentCtor = Activator.GetParentCtor(type);
 
         let parameters = Activator.GetOwnParameters(type, parentCtor);

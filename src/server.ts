@@ -37,7 +37,7 @@ export class Server {
 
         // this.TestActivator();
 
-        this.TestDI();
+        // this.TestDI();
     }
 
     private Middleware(): void {
@@ -113,13 +113,30 @@ export class Server {
 
     private TestDI(): void {
 
-        // let type = ExceptionLoggingService;
-        // console.log(type.prototype);
-        // // console.log(type.arguments);
-        // console.log(type.name);
-        // console.log(type.length);
-        // // console.log(type.caller);
-        // console.log((<any>type).parameters);
+        console.log('');
+        console.log('Start test DI... ');
+        let type = ExceptionLoggingService;
+        for (var item in type) {
+            console.log(item);
+        }
+        var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+        var ARGUMENT_NAMES = /([^\s,]+)/g;
+
+        var fnStr = type.toString().replace(STRIP_COMMENTS, '');
+        var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+
+        console.log(fnStr);
+        console.log(result);
+
+        // console.log( type.toString());
+        console.log('Type of ...');
+        console.log(type);
+        console.log(type.prototype);
+        // console.log(type.arguments);
+        console.log(type.name);
+        console.log(type.length);
+        // console.log(type.caller);
+        console.log((<any>type).parameters);
 
         // let proto = Object.getPrototypeOf(type);
         // console.log(proto.constructor);
@@ -130,32 +147,34 @@ export class Server {
         // console.log(ctor.prototype);
 
 
-        let services = new DI.ServicecContainer();
-        let token = { Token: 'LoggingService' };
-        let errortoken = { Token: 'ExceptionLoggingService' };
+        // let services = new DI.ServicecContainer();
+        // let token = { Token: 'LoggingService' };
+        // let errortoken = { Token: 'ExceptionLoggingService' };
 
-        services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
+        // services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
         // services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
-        services.Register(DI.ServiceDescriptor.Singleton(errortoken)
-            .UseFactory(serviceProvider => {
-                let loggingSvc = serviceProvider.GetService(token);
 
-                return new ExceptionLoggingService(loggingSvc);
-            }));
+        // // services.Register(DI.ServiceDescriptor.Singleton(errortoken)
+        // //     .UseFactory(serviceProvider => {
+        // //         let loggingSvc = serviceProvider.GetService(token);
 
-        console.log(services);
+        // //         return new ExceptionLoggingService(loggingSvc);
+        // //     }));
 
-        let service = services.TryResolve<ILoggingService>(token);
-        console.log(service);
-        if (service) {
-            service.Debug('Got logging service');
-        }
+        // console.log(services);
 
-        let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
-        console.log(errorSvc);
-        if (errorSvc) {
-            errorSvc.Handle('fake exception');
-        }
+        // let service = services.TryResolve<ILoggingService>(token);
+        // console.log(service);
+        // if (service) {
+        //     service.Debug('Got logging service');
+        // }
+
+        // let errorSvc = services.TryResolve<IExceptionHandlingService>(errortoken);
+        // console.log(errorSvc);
+        // if (errorSvc) {
+        //     errorSvc.Handle('fake exception');
+        // }
+
 
     }
 }
@@ -184,7 +203,7 @@ interface IExceptionHandlingService {
 }
 class ExceptionLoggingService implements IExceptionHandlingService {
 
-    constructor( @DI.TokenCreator('LoggingService') private loggingService: ILoggingService) {
+    constructor( @DI.Service('LoggingService') private loggingService: ILoggingService) {
 
     }
 
@@ -196,3 +215,52 @@ class ExceptionLoggingService implements IExceptionHandlingService {
         }
     }
 }
+
+
+const log = (target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<Function>) => {
+    console.log('parameters: ');
+    console.log(target);
+    console.log(key);
+    console.log(descriptor);
+
+    return {
+        value: function (...args: any[]) {
+            console.log("Arguments: ", args.join(", "));
+            const result = descriptor.value.apply(target, args);
+            console.log("Result: ", result);
+            return result;
+        }
+    }
+}
+const LOGGED_PARAM_KEY = "logged_param";
+const loggedParam = (target: Object, key: string | symbol, index: number) => {
+
+    console.log('constructor ');
+    console.log(target);
+    console.log(key);
+    console.log(index);
+
+    let metaForLoggedParam = target[LOGGED_PARAM_KEY];
+    if (!metaForLoggedParam) {
+        metaForLoggedParam = {};
+        target[LOGGED_PARAM_KEY] = metaForLoggedParam;
+    }
+    const loggedParams: number[] = metaForLoggedParam[key] || [];
+    loggedParams.push(index);
+    target[LOGGED_PARAM_KEY] = loggedParams;
+
+    console.log(target);
+}
+
+class Calculator {
+
+    constructor( @loggedParam name: string) {
+
+    }
+    @log
+    add(x: number, y: number) {
+        return x + y;
+    }
+}
+
+new Calculator('test').add(1, 3);

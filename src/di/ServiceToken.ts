@@ -7,7 +7,7 @@ export interface ServiceToken {
 //     return () => { return { Token: token } };
 // };
 
-export const TokenCreator = function (token: string) {
+export const Service = function (token: string) {
     console.log(`token creator`);
     console.log(token);
     return function (target: object, property: string, index: number) {

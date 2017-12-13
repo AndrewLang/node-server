@@ -39,12 +39,21 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
             return null;
         }
 
+        console.log('==================================================================');
+        console.log(`Resolve service with`);
+        console.log(serviceToken);
+
         if (this.instanceTable.has(serviceToken)) {
             return this.instanceTable.get(serviceToken);
         }
 
         if (this.tokenTable.has(serviceToken)) {
             let descriptor = this.tokenTable.get(serviceToken);
+
+            console.log('');
+            console.log('Service descriptor');
+            console.log(descriptor);
+
             let instance: any;
             if (descriptor.ImplementationInstance) {
                 //  resolve instance directly
@@ -57,13 +66,14 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
             } else if (descriptor.ImplementationType) {
                 // resolve instance by implementation type
 
-                let dependencies = this.ResolveDependicies(descriptor);
+                let dependencies = this.ResolveDependencies(descriptor);
 
                 instance = Activator.Createinstance<TService>(descriptor.ImplementationType, ...dependencies);
 
                 this.instanceTable.set(serviceToken, instance);
             }
 
+            console.log('==================================================================');
             return instance;
         }
     }
@@ -89,13 +99,16 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
     //     }
     //     return instance;
     // }
-    private ResolveDependicies(descriptor: ServiceDescriptor): any[] {
+    private ResolveDependencies(descriptor: ServiceDescriptor): any[] {
         let result = [];
+
+        console.log('');
 
         let params = Activator.GetParameters(descriptor.ImplementationType);
 
-        console.log(`service parameters`);
+        console.log(`Resolve service dependencies`);
         console.log(params);
+        console.log('');
 
         return result;
     }
