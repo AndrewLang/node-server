@@ -225,7 +225,15 @@ class FackService implements IFackService {
         console.log('Calling Fack Service');
     }
 }
-
+interface ITalkService {
+    Do(): void;
+}
+@DI.Injectable()
+class TalkService implements ITalkService {
+    Do(): void {
+        console.log(`Talking service...`);
+    }
+}
 interface IExceptionHandlingService {
     Handle(error: any): void;
 }
@@ -234,7 +242,8 @@ class ExceptionLoggingService implements IExceptionHandlingService {
 
     constructor(private mockService: MockService,
         @DI.Inject({ Token: 'ILoggingService' }) private loggingService: ILoggingService,
-        private fackService: FackService
+        private fackService: FackService,
+        @DI.Inject({ Token: 'ITalkService' }) private talkService: ITalkService
     ) {
 
     }
@@ -292,52 +301,19 @@ class Calculator {
         let services = new DI.ServicecContainer();
         let token = { Token: 'ILoggingService' };
         let errortoken = { Token: 'IExceptionLoggingService' };
+        let talkToken = { Token: 'ITalkService' };
 
         services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
         services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
-        //services.Register(DI.ServiceDescriptor.Singleton())
+        services.Register(DI.ServiceDescriptor.Singleton(talkToken).UseType(TalkService));
+        
+        console.log('');
 
-        // let loggingSvc = services.GetService<ILoggingService>(token);
+        let descriptors = DI.Activator.GetConstructorDescriptor(ExceptionLoggingService);
 
-
-        // Debug('Get constructor name', DI.Activator.GetFunctionName(LoggingService));
-        // Debug('Get constructor metadata', DI.Activator.GetConstructorMetadata(LoggingService))
-
-        Debug('Get constructor name', DI.Activator.GetFunctionName(ExceptionLoggingService));
-        Debug('Keys', Reflect.getMetadataKeys(ExceptionLoggingService));
-        let metadata = DI.Activator.GetConstructorMetadata(ExceptionLoggingService);
-        if (metadata.CompilerData) {
-            Debug('Non-inject', metadata.CompilerData.toString());
-            console.log(DI.Activator.GetFunctionName(metadata.CompilerData));
-        }
-        for (let item in metadata.UserData) {
-            let data = metadata.UserData[item][0];
-
-            console.log(`Key: ${data.Key}, Value: `);
-            console.log(data.Value);
-
-            // let svc = services.GetService(data.Value);
-            // Debug('Service', svc);
-        }
-        // Debug('Get constructor compiler metadata of exception service', metadata.CompilerData.toString());
-        // DebugMetaMap('Get constructor user  metadata', metadata.UserData);
-
-        let data = DI.Reflector.GetMetadata(DI.KnownKeys.ParamTypes, ExceptionLoggingService);
-        Debug('Get metadata', data)
-        for (let item in data) {
+        for (let item of descriptors) {
             console.log(item);
-            let func = data[item];
-            let name = DI.Activator.GetFunctionName(func);
-            console.log(name);
-
-            if (name && name !== 'Object') {
-                let instance = DI.Activator.Createinstance(func);
-                console.log(`Instance for ${name}`);
-                console.log(instance);
-                (instance as any).Do();
-            }
         }
-
         console.log('');
     }
 
