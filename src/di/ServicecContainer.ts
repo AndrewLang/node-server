@@ -1,19 +1,15 @@
 import { IServiceContainer } from './IServiceContainer';
 import { ServiceDescriptor } from './ServiceDescriptor';
-import { ServiceToken } from './ServiceToken';
+import * as Models from './Models';
 import { Activator } from './Activator';
-import { Type } from './Type';
 import { IServiceProvider } from './IServiceProvider';
-
-
+import { IDictionary, Dictionary } from './Dictionary';
 
 export class ServicecContainer implements IServiceContainer, IServiceProvider {
 
-
-    private nameTokenMapping = new Map<string, ServiceToken>();
-    private typeMapping = new Map<Type<any>, Type<any>[]>();
-    private tokenTable = new Map<ServiceToken, ServiceDescriptor>();
-    private instanceTable = new Map<ServiceToken, any>();
+    private nameTokenMapping = new Dictionary<string, Models.IServiceToken>();
+    private tokenTable = new Dictionary<Models.IServiceToken, ServiceDescriptor>();
+    private instanceTable = new Dictionary<Models.IServiceToken, any>();
 
     constructor() {
         this.Register(ServiceDescriptor.Singleton({ Token: 'IServiceContainer' }).UseInstance(this))
@@ -26,116 +22,133 @@ export class ServicecContainer implements IServiceContainer, IServiceProvider {
         }
 
         if (descriptor.Name && descriptor.Token) {
-            this.nameTokenMapping.set(descriptor.Name, descriptor.Token);
+            this.nameTokenMapping.Add(descriptor.Name, descriptor.Token);
         }
 
-        this.tokenTable.set(descriptor.Token, descriptor);
+        this.tokenTable.Add(descriptor.Token, descriptor);
 
         return this;
     }
 
-    TryResolve<TService>(serviceToken: ServiceToken): TService {
+    TryResolve<TService>(serviceToken: Models.IServiceToken): TService {
         if (!serviceToken) {
             return null;
         }
-
-        console.log('==================================================================');
-        console.log(`Resolve service with`);
+        console.log('====================================================');
+        console.log('Start resolve service by')
         console.log(serviceToken);
+        console.log();
 
-        let lookupToken = (map: Map<ServiceToken, any>, token: ServiceToken): any => {
-            if (map.has(token)) {
-                return map.get(token);
-            } else {
-                let instance: any;
-                // console.log('Looking into table')
-                map.forEach((value, key) => {
-                    
-                    if (key.Token == token.Token) {
-                        instance = value;                        
-                    }
-                });
-                return instance;
-            }
-        };
-
-        let exist = lookupToken(this.instanceTable, serviceToken);
-
-        if (exist) {
-            // return this.instanceTable.get(serviceToken);
-            return exist;
-        }
-
-        exist = lookupToken(this.tokenTable, serviceToken);
-
-        if (exist) {
-            let descriptor = exist; this.tokenTable.get(serviceToken);
-
-            console.log('');
-            console.log('Service descriptor');
-            console.log(descriptor);
-
-            let instance: any;
-            if (descriptor.ImplementationInstance) {
-                //  resolve instance directly
-                instance = descriptor.ImplementationInstance;
-                this.instanceTable.set(serviceToken, instance);
-            } else if (descriptor.ImplementationFactory) {
-                // resolve instance by registered factory
-                instance = descriptor.ImplementationFactory(this);
-                this.instanceTable.set(serviceToken, instance);
-            } else if (descriptor.ImplementationType) {
-                // resolve instance by implementation type
-
-                let dependencies = this.ResolveDependencies(descriptor);
-
-                instance = Activator.Createinstance<TService>(descriptor.ImplementationType, ...dependencies);
-
-                this.instanceTable.set(serviceToken, instance);
-            }
+        let instance = this.ResolveInstanceByToken(serviceToken);
 
 
-            return instance;
-        } else {
-            console.log(`No descriptor found by given token`);
-            //console.log(this.tokenTable);
-        }
-
-        console.log('==================================================================');
+        console.log('====================================================');
+        return instance;
     }
-    GetService(serviceToken: ServiceToken);
-    GetService<T>(serviceToken: ServiceToken): T;
+
+
+    GetService(serviceToken: Models.IServiceToken);
+    GetService<T>(serviceToken: Models.IServiceToken): T;
     GetService(serviceToken: any) {
         return this.TryResolve(serviceToken);
     }
-    // private ResolveInternal(descriptor: ServiceDescriptor): any {
-    //     if (!descriptor) {
-    //         return null;
-    //     }
 
-    //     let instance: any;
-    //     if (descriptor.ImplementationInstance) {
-    //         //  resolve instance directly
-    //         instance = descriptor.ImplementationInstance;
-    //         this.instanceTable.set(serviceToken, instance);
-    //     } else if (descriptor.ImplementationFactory) {
-    //         // resolve instance by registered factory
-    //         instance = descriptor.ImplementationFactory();
-    //         this.instanceTable.set(serviceToken, instance);
-    //     }
-    //     return instance;
-    // }
+    private GetDictionaryValue(dictionary: IDictionary<Models.IServiceToken, any>, token: Models.IServiceToken): any {
+        if (dictionary.ContainsKey(token)) {
+            return dictionary.Item(token);
+        } else {
+            console.log('Get service descriptor with');
+            console.log(token);
+            let data = dictionary.FirstOrDefault(x => x.Key.Token === token.Token);
+
+            console.log(data);
+            return data ? data.Value : null;
+        }
+    }
     private ResolveDependencies(descriptor: ServiceDescriptor): any[] {
-        let result = [];
+        let dependencies = [];
 
-        console.log('');
+        let descriptors = Activator.GetConstructorDescriptors(descriptor.ImplementationType);
+        console.log('Method descriptors');
+        console.log(descriptors);
+        console.log();
 
-        let params = Activator.GetParameters(descriptor.ImplementationType);
+        for (let item of descriptors) {
+            console.log("Resolve dependency ")
+            console.log(item)
+            let dependency = this.ResolveInstanceByMethodDescriptor(item);
+           
+            console.log(dependency)
+            dependencies.push(dependency);
+        }
 
-        console.log(`Resolve service dependencies`);
-        console.log(params);
-        console.log('');
+        return dependencies;
+    }
+    private ResolveInstanceByMethodDescriptor(methodDescriptor: Models.IMethodDescriptor): any {
+        if (methodDescriptor.Creator && methodDescriptor.Token) {
+            return this.ResolveInstanceByCreator(methodDescriptor.Creator, methodDescriptor.Token);
+        } else if (methodDescriptor.Token) {
+            return this.ResolveInstanceByToken(methodDescriptor.Token);
+        }  
+        return null;
+    }
+    private ResolveInstanceByToken(token: Models.IServiceToken): any {
+        let instance = this.GetDictionaryValue(this.instanceTable, token);
 
-        return result;
+        if (instance) {
+            return instance;
+        }
+
+        console.log('No instance found.');
+        console.log();
+
+        let descriptor: ServiceDescriptor = this.GetDictionaryValue(this.tokenTable, token);
+
+        console.log("Service descriptor ")
+        console.log();
+        console.log(descriptor);
+        // console.log(token);
+        console.log();
+        if (!descriptor) {
+            descriptor = new ServiceDescriptor();
+            descriptor.Token = token;
+            this.tokenTable.Add(token, descriptor);
+        }
+
+
+        return descriptor ? this.ResolveInstanceByDescriptor(descriptor) : null;
+    }
+    private ResolveInstanceByCreator(creator: Models.Type<any>, token: Models.IServiceToken): any {
+        let descriptor = new ServiceDescriptor();
+        descriptor.Token = token;
+        descriptor.ImplementationType = creator;
+        return this.ResolveInstanceByDescriptor(descriptor);
+    }
+    private ResolveInstanceByDescriptor(descriptor: ServiceDescriptor): any {
+        let instance: any;
+
+        if (descriptor.ImplementationInstance) {
+            //  resolve instance directly
+            instance = descriptor.ImplementationInstance;
+            this.instanceTable.Add(descriptor.Token, instance);
+        } else if (descriptor.ImplementationFactory) {
+            // resolve instance by registered factory
+            instance = descriptor.ImplementationFactory(this);
+            this.instanceTable.Add(descriptor.Token, instance);
+        } else if (descriptor.ImplementationType) {
+            // resolve instance by implementation type
+
+            let dependencies = this.ResolveDependencies(descriptor);
+
+            console.log();
+            console.log('Dependencies ');
+            console.log(dependencies);
+
+            instance = Activator.Createinstance<any>(descriptor.ImplementationType, ...dependencies);
+
+            this.instanceTable.Add(descriptor.Token, instance);
+        }
+
+        return instance;
     }
 }

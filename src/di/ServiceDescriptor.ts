@@ -1,12 +1,11 @@
-import { Type } from './Type';
-import { ServiceToken } from './ServiceToken';
+import * as Models from './Models';
 import { IServiceProvider } from './IServiceProvider';
 
 
 export class ServiceDescriptor {
     Name: string;
-    Token: ServiceToken;    
-    ImplementationType: Type<any>;
+    Token: Models.IServiceToken;    
+    ImplementationType: Models.Type<any>;
     ImplementationInstance: any;
     ImplementationFactory: (serviceProvider?: any) => any;
 
@@ -22,13 +21,13 @@ export class ServiceDescriptor {
         this.ImplementationFactory = factory;
         return this;
     }
-    UseType(implementationType: Type<any>): ServiceDescriptor {
+    UseType(implementationType: Models.Type<any>): ServiceDescriptor {
         this.ImplementationType = implementationType;
         return this;
     }
 
     
-    static Singleton(token: ServiceToken): ServiceDescriptor {
+    static Singleton(token: Models.IServiceToken): ServiceDescriptor {
         let descriptor = new ServiceDescriptor();
         descriptor.Token = token;        
         return descriptor;

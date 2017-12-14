@@ -5,13 +5,7 @@ import { KnownKeys } from './KnownKeys';
 
 import 'reflect-metadata';
 
-export interface Newable<T> {
-    new(...args: any[]): T;
-}
 
-export interface ServiceToken {
-    Token: string | symbol;
-}
 
 export const DecorateParameter = (target: any, property: string, index: number, metadata: Models.Metadata) => {
     const metadataKey = KnownKeys.TaggedTypes;
@@ -69,7 +63,7 @@ export const Injectable = () => {
         return target;
     };
 }
-export const Inject = (token: ServiceToken) => {
+export const Inject = (token: Models.IServiceToken) => {
     return function (target: any, targetKey: string, index?: number): void {
 
         let metadata = { Key: KnownKeys.InjectTag, Value: token };

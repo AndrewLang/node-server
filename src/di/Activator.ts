@@ -1,4 +1,4 @@
-import { Type, IsType } from './Type';
+
 import { Reflector } from './Reflector';
 import * as Models from './Models';
 import { KnownKeys } from './KnownKeys';
@@ -10,23 +10,23 @@ export class Activator {
      * @param type 
      * @param args 
      */
-    static Createinstance<T>(type: Type<T>, ...args: any[]): T {
+    static Createinstance<T>(type: Models.Type<T>, ...args: any[]): T {
         let factory = Activator.Factory(type);
 
         return factory(...args);
     }
     /** Factory of creating object instance with arguments */
-    public static Factory<T>(t: Type<T>): (...args: any[]) => T {
+    public static Factory<T>(t: Models.Type<T>): (...args: any[]) => T {
         return (...args: any[]) => new t(...args);
     }
     /**
      * Get parameters
      * @param type 
      */
-    public static GetParameters(type: Type<any>): any[][] {
+    public static GetParameters(type: Models.Type<any>): any[][] {
         // Note: only report metadata if we have at least one class decorator
         // to stay in sync with the static reflector.
-        if (!IsType(type)) {
+        if (!Models.IsType(type)) {
             return [];
         }
 
@@ -49,7 +49,7 @@ export class Activator {
      * 
      * @param constructor 
      */
-    public static GetConstructorDescriptor(constructor: Function): Models.IMethodDescriptor[] {
+    public static GetConstructorDescriptors(constructor: Function): Models.IMethodDescriptor[] {
         if (!constructor) {
             throw new Error(`Argument 'constructor' is not valid.`);
         }

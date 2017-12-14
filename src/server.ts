@@ -213,7 +213,7 @@ interface IMockService {
 @DI.Injectable()
 class MockService implements IMockService {
     Do(): void {
-        console.log('do noting');
+        console.log('Mock service do');
     }
 }
 interface IFackService {
@@ -221,8 +221,17 @@ interface IFackService {
 }
 @DI.Injectable()
 class FackService implements IFackService {
+    constructor( @DI.Inject({ Token: 'ITalkService' }) private talkService: ITalkService) {
+
+    }
     Do(): void {
         console.log('Calling Fack Service');
+
+        if (this.talkService) {
+            this.talkService.Do();
+        } else {
+            console.log('Talk service not found');
+        }
     }
 }
 interface ITalkService {
@@ -242,24 +251,29 @@ class ExceptionLoggingService implements IExceptionHandlingService {
 
     constructor(private mockService: MockService,
         @DI.Inject({ Token: 'ILoggingService' }) private loggingService: ILoggingService,
-        private fackService: FackService,
-        @DI.Inject({ Token: 'ITalkService' }) private talkService: ITalkService
+        private fackService: FackService
     ) {
 
     }
 
     Handle(error: any): void {
         if (this.loggingService) {
+            console.log('logging service found')
             this.loggingService.Debug(error);
         } else {
             console.log('Logging service not found.')
         }
         if (this.mockService) {
             this.mockService.Do();
+        } else {
+            console.log('Mock service not found.');
         }
         if (this.fackService) {
             this.fackService.Do();
+        } else {
+            console.log('Fack service not found.');
         }
+
     }
 }
 
@@ -285,12 +299,6 @@ export const DebugMetaMap = (name: string, data?: DI.MetadataMap) => {
 
 };
 
-function logParamTypes(target: any, key: string) {
-    var types = Reflect.getMetadata("design:paramtypes", target, key);
-    var s = types.map(a => a.name).join();
-    console.log(`Method ${key} param types: ${s}`);
-}
-
 
 class Calculator {
 
@@ -306,18 +314,24 @@ class Calculator {
         services.Register(DI.ServiceDescriptor.Singleton(token).UseType(LoggingService));
         services.Register(DI.ServiceDescriptor.Singleton(errortoken).UseType(ExceptionLoggingService));
         services.Register(DI.ServiceDescriptor.Singleton(talkToken).UseType(TalkService));
-        
+
+        // let svc = services.GetService<ILoggingService>(token);
+        // console.log('Service instance');
+        // console.log(svc);
+
+        // console.log('');
+
+        let exceptionSvc = services.GetService<IExceptionHandlingService>(errortoken);
+        console.log('Exception Service instance');
+        console.log(exceptionSvc);
         console.log('');
 
-        let descriptors = DI.Activator.GetConstructorDescriptor(ExceptionLoggingService);
+        exceptionSvc.Handle('False error');
+        console.log();
 
-        for (let item of descriptors) {
-            console.log(item);
-        }
-        console.log('');
     }
 
-    @logParamTypes
+
     add(x: number, y: number) {
         return x + y;
     }

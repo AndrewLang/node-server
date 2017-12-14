@@ -16,11 +16,28 @@ export interface ConstructorMetadata {
 export interface IMethodDescriptor {
     Name: string;
     Token?: any;
-    Creator?: Function;
+    Creator?: Type<any>;
 }
 export interface IParameterDescriptor {
     Index: number;
     Name: string;
     Key: string;
     Value: any;
+}
+export interface Newable<T> {
+    new(...args: any[]): T;
+}
+
+export interface IServiceToken {
+    Token: string | symbol;
+}
+
+export const Type = Function;
+
+export function IsType(v: any): v is Type<any> {
+  return typeof v === 'function';
+}
+
+export interface Type<T> extends Function {
+    new(...args: any[]): T;
 }
